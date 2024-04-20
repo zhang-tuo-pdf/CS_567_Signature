@@ -1,5 +1,6 @@
 import torch
 import torchvision.transforms as transforms
+from torchvision.transforms import ToTensor
 from torch.utils.data import Dataset, DataLoader, random_split
 from data.snn_dataset import SiameseDataset
 from model.snn import SiameseNetwork, ContrastiveLoss
@@ -7,45 +8,50 @@ import torch.nn.functional as F
 import numpy as np
 
 def data_loading(batchsize):
-    training_dir = '/home/ultraz/CS_567_Signature/data/sign_data/train'
-    testing_dir = '/home/ultraz/CS_567_Signature/data/sign_data/test'
-    training_csv = '/home/ultraz/CS_567_Signature/data/sign_data/train_data.csv'
-    testing_csv = '/home/ultraz/CS_567_Signature/data/sign_data/test_data.csv'
+    training_dir = '/kaggle/input/sign-data/sign_data/train'
+    testing_dir = '/kaggle/input/sign-data/sign_data/test'
+    training_csv = '/kaggle/input/sign-data/sign_data/train_data.csv'
+    testing_csv = '/kaggle/input/sign-data/sign_data/test_data.csv'
+
+    transform = ToTensor()
 
     siamese_dataset = SiameseDataset(
-    training_csv,
-    training_dir,
-    transform=transforms.Compose(
-        [transforms.Resize((105, 105)), transforms.ToTensor()]
-    ),
+        training_csv=training_csv,
+        training_dir=training_dir,
+        transform=transform
     )
+
     train_size = int(0.8 * len(siamese_dataset))
     val_size = len(siamese_dataset) - train_size
-    train_dataset, val_dataset = torch.utils.data.random_split(siamese_dataset, [train_size, val_size])
+    train_dataset, val_dataset = random_split(siamese_dataset, [train_size, val_size])
 
     train_dataloader = DataLoader(train_dataset,
-                        shuffle=True,
-                        num_workers=8,
-                        batch_size=batchsize) 
-    
+                                  shuffle=True,
+                                  num_workers=8,
+                                  batch_size=batchsize)
+
     val_dataloader = DataLoader(val_dataset,
-                        shuffle=True,
-                        num_workers=8,
-                        batch_size=1) 
-    
+                                shuffle=True,
+                                num_workers=8,
+                                batch_size=1)
+
     test_dataset = SiameseDataset(
         training_csv=testing_csv,
         training_dir=testing_dir,
-        transform=transforms.Compose(
-            [transforms.Resize((105, 105)), transforms.ToTensor()]
-        ),
+        transform=transform
     )
 
     test_dataloader = DataLoader(test_dataset, num_workers=8, batch_size=1, shuffle=True)
+
+    # Print the size of datasets
     print('size of trainset is ', len(train_dataset))
     print('size of valset is ', len(val_dataset))
     print('size of testset is ', len(test_dataset))
+
+    # Return the DataLoaders
     return train_dataloader, val_dataloader, test_dataloader
+
+
 
 def load_model():
     model = SiameseNetwork()
@@ -57,6 +63,8 @@ def train(train_data, model, device, learning_rate, training_epoch):
     criterion = ContrastiveLoss().to(device)
     optimizer = torch.optim.Adam(model.parameters(),lr = learning_rate)
     epoch_loss = []
+    print("training_epoch is ", training_epoch)
+    print("training_epoch number is ", range(training_epoch))
     for epoch in range(training_epoch):
         batch_loss = []
         for batch_idx, data in enumerate(train_data, 0):
@@ -118,12 +126,12 @@ if __name__ == "__main__":
     batch_size = 16
     train_dataloader, validation_dataloader, test_dataloader = data_loading(batch_size)
     snn = load_model()
-    device = 'cuda:4'
+    device = 'cpu'
     learning_rate = 5e-4
-    training_epoch = 100
-    # snn, epoch_loss = train(train_dataloader, snn, device, learning_rate, training_epoch)
-    # torch.save(snn.state_dict(), 'snn_trained_2_64.pth')
-    snn.load_state_dict(torch.load("snn_trained_2.pth"))
+    training_epoch = 10
+    snn, epoch_loss = train(train_dataloader, snn, device, learning_rate, training_epoch)
+    #torch.save(snn.state_dict(), 'snn_trained_2_64.pth')
+    #snn.load_state_dict(torch.load("snn_trained_2.pth"))
     threshold = get_threshold(snn, device, validation_dataloader)
     acc = test(snn, device, test_dataloader, threshold)
     print(acc)
