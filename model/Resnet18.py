@@ -5,8 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
 
-from pythonProject import model
-
 
 class SiameseNetwork(nn.Module):
     def __init__(self):
