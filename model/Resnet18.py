@@ -1,4 +1,5 @@
 # Siamese Network model Implementation with Contrastive Loss
+# Encoder: ResNet18 with pretrained weights and modified fc layers
 
 import torch
 import torch.nn as nn
