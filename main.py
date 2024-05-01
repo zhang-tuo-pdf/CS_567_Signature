@@ -55,8 +55,8 @@ def data_loading(batchsize):
 
 
 
-def load_model():
-    model = SiameseNetwork()
+def load_model(encoder='cnn'):
+    model = SiameseNetwork(model=encoder)
     return model
 
 def train(train_data, model, device, learning_rate, training_epoch):
@@ -127,7 +127,7 @@ def test(model, device, test_data, threshold):
 if __name__ == "__main__":
     batch_size = 16
     train_dataloader, validation_dataloader, test_dataloader = data_loading(batch_size)
-    snn = load_model()
+    snn = load_model(encoder='cnn')
     device = 'cuda'
     learning_rate = 5e-4
     training_epoch = 10
