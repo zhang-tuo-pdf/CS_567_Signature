@@ -1,55 +1,57 @@
+import os
+import random
+import numpy as np
+import pandas as pd
+from PIL import Image, ImageChops
 import torch
+import torch.nn.functional as F
+from torch.utils.data import Dataset, DataLoader, random_split, Subset
 import torchvision.transforms as transforms
-from torchvision.transforms import ToTensor
-from torch.utils.data import Dataset, DataLoader, random_split
+from torchvision.transforms import ToTensor, Compose
 from data.snn_dataset import SiameseDataset
 from model.snn import SiameseNetwork, ContrastiveLoss
-import torch.nn.functional as F
-import numpy as np
+
 
 def data_loading(batchsize):
-    training_dir = '/kaggle/input/sign-data/sign_data/train'
-    testing_dir = '/kaggle/input/sign-data/sign_data/test'
-    training_csv = '/kaggle/input/sign-data/sign_data/train_data.csv'
-    testing_csv = '/kaggle/input/sign-data/sign_data/test_data.csv'
-
+    training_dir = '/kaggle/input/msds-new/DataSet_MSDS/train'
+    testing_dir = '/kaggle/input/msds-new/DataSet_MSDS/test'
+    val_dir = '/kaggle/input/msds-new/DataSet_MSDS/val'
+    training_csv = '/kaggle/input/msds-new/DataSet_MSDS/train_data.csv'
+    testing_csv = '/kaggle/input/msds-new/DataSet_MSDS/test_data.csv'
+    val_csv = '/kaggle/input/msds-new/DataSet_MSDS/val_data.csv'
+    
     transform = ToTensor()
+    # 创建SiameseDataset实例
+    train_dataset_full = SiameseDataset(training_csv=training_csv, training_dir=training_dir, transform=transform)
+    val_dataset_full = SiameseDataset(training_csv=val_csv, training_dir=val_dir, transform=transform)
+    test_dataset_full = SiameseDataset(training_csv=testing_csv, training_dir=testing_dir, transform=transform)
 
-    siamese_dataset = SiameseDataset(
-        training_csv=training_csv,
-        training_dir=training_dir,
-        transform=transform
-    )
+    # 随机抽取1/3的数据
+    train_indices = np.random.choice(len(train_dataset_full), len(train_dataset_full) // 3, replace=False)
+    train_dataset = Subset(train_dataset_full, train_indices)
+    
+    val_indices = np.random.choice(len(val_dataset_full), len(val_dataset_full) // 3, replace=False)
+    val_dataset = Subset(val_dataset_full, val_indices)
+    
+    test_indices = np.random.choice(len(test_dataset_full), len(test_dataset_full) // 3, replace=False)
+    test_dataset = Subset(test_dataset_full, test_indices)
 
-    train_size = int(0.8 * len(siamese_dataset))
-    val_size = len(siamese_dataset) - train_size
-    train_dataset, val_dataset = random_split(siamese_dataset, [train_size, val_size])
+    # 检查测试数据集是否为空
+    if len(test_dataset) == 0:
+        raise ValueError("Test dataset is empty. Check your dataset paths and CSV file contents.")
+    
+    # 创建DataLoaders
+    train_dataloader = DataLoader(train_dataset, shuffle=True, num_workers=4, batch_size=batchsize, prefetch_factor=2)
+    val_dataloader = DataLoader(val_dataset, shuffle=True, num_workers=4, batch_size=1, prefetch_factor=2)
+    test_dataloader = DataLoader(test_dataset, num_workers=4, batch_size=1, shuffle=True, prefetch_factor=2)
 
-    train_dataloader = DataLoader(train_dataset,
-                                  shuffle=True,
-                                  num_workers=8,
-                                  batch_size=batchsize)
-
-    val_dataloader = DataLoader(val_dataset,
-                                shuffle=True,
-                                num_workers=8,
-                                batch_size=1)
-
-    test_dataset = SiameseDataset(
-        training_csv=testing_csv,
-        training_dir=testing_dir,
-        transform=transform
-    )
-
-    test_dataloader = DataLoader(test_dataset, num_workers=8, batch_size=1, shuffle=True)
-
-    # Print the size of datasets
+    # 打印数据集大小
     print('size of trainset is ', len(train_dataset))
     print('size of valset is ', len(val_dataset))
     print('size of testset is ', len(test_dataset))
 
-    # Return the DataLoaders
     return train_dataloader, val_dataloader, test_dataloader
+
 
 
 
@@ -126,7 +128,7 @@ if __name__ == "__main__":
     batch_size = 16
     train_dataloader, validation_dataloader, test_dataloader = data_loading(batch_size)
     snn = load_model()
-    device = 'cpu'
+    device = 'cuda'
     learning_rate = 5e-4
     training_epoch = 10
     snn, epoch_loss = train(train_dataloader, snn, device, learning_rate, training_epoch)

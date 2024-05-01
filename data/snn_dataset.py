@@ -7,12 +7,15 @@ import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
+
 def trim(im):
     bg = Image.new(im.mode, im.size, im.getpixel((0,0)))
     diff = ImageChops.difference(im, bg)
     diff = ImageChops.add(diff, diff, 2.0, -100)
     bbox = diff.getbbox()
-    return im.crop(bbox) if bbox else None
+    if bbox:
+        return im.crop(bbox)
+    return im 
 
 def process_image(image, output_size=(105, 105)):
     img_trimmed = trim(image)
