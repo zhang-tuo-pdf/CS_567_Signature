@@ -38,7 +38,7 @@ def data_loading(batchsize):
 
     # 检查测试数据集是否为空
     if len(test_dataset) == 0:
-        raise ValueError("Test dataset is empty. Check your dataset paths and CSV file contents.")
+        raise ValueError("Test dataset is empty. Check dataset paths and CSV file.")
     
     # 创建DataLoaders
     train_dataloader = DataLoader(train_dataset, shuffle=True, num_workers=4, batch_size=batchsize, prefetch_factor=2)
