@@ -19,6 +19,6 @@ To run the project:
 
 1. Download the desired dataset
 2. Configure the `data_loading()` function in `main.py` which locates on the very top with the correct directory paths.
-3. In the main execution block (if __name__ == "__main__" section) which locates on the very end of `main.py`, set the `dataset` and `encoder` variables to either 'ICDAR', 'MSDS', 'CNN', or 'ResNet' as desired.
+3. In the main execution block (if __name__ == "__main__" section) which locates on the very end of `main.py`, set the `dataset` and `encoder` variables to either 'icdar', 'msds', 'cnn', or 'resnet' as desired.
 4. Optionally, adjust the batch size, device, learning rate, and number of training epochs in the script.
 5. Execute the script: `main.py`
