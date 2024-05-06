@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
 
-def trim(im):
+def trim_icdar(im):
     bg = Image.new(im.mode, im.size, im.getpixel((0,0)))
     diff = ImageChops.difference(im, bg)
     diff = ImageChops.add(diff, diff, 2.0, -100)
@@ -17,8 +17,8 @@ def trim(im):
         return im.crop(bbox)
     return im 
 
-def process_image(image, output_size=(105, 105)):
-    img_trimmed = trim(image)
+def process_image_icdar(image, output_size=(105, 105)):
+    img_trimmed = trim_icdar(image)
 
     img_padded = cv2.copyMakeBorder(
         np.array(img_trimmed),
@@ -33,7 +33,8 @@ def process_image(image, output_size=(105, 105)):
     ]
     return Image.fromarray(cv2.resize(crop_img_final, output_size, interpolation=cv2.INTER_AREA), 'L')
 
-class SiameseDataset(Dataset):
+
+class SiameseDataset_ICDAR(Dataset):
     def __init__(self, training_csv, training_dir, transform=None):
         self.train_df = pd.read_csv(training_csv)
         self.train_df.columns = ["image1", "image2", "label"]
@@ -52,8 +53,8 @@ class SiameseDataset(Dataset):
         img0 = Image.open(image1_path).convert("L")
         img1 = Image.open(image2_path).convert("L")
 
-        img0 = process_image(img0)
-        img1 = process_image(img1)
+        img0 = process_image_icdar(img0)
+        img1 = process_image_icdar(img1)
 
         if self.transform:
             img0 = self.transform(img0)
