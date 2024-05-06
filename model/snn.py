@@ -51,19 +51,19 @@ class SiameseNetwork(nn.Module):
         # Resnet18 encoder with pretrained weights
         elif self.model == 'resnet':
             # Use ResNet18 pretrained weights except for newly-designed fc layers
-            self.resnet18 = models.resnet18(weights="DEFAULT")
-
-            original_first_layer = self.resnet18.conv1
+            #self.resnet18 = models.resnet18(weights="DEFAULT")
+            self.resnet18 = models.resnet18()
+            #original_first_layer = self.resnet18.conv1
 
             # Create a new conv layer with in_channels=1
             self.resnet18.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
             # Initialize the new conv layer's weights by averaging the pretrained weights across the color channels
-            with torch.no_grad():
-                self.resnet18.conv1.weight[:] = original_first_layer.weight.mean(dim=1, keepdim=True)
+            # with torch.no_grad():
+            #     self.resnet18.conv1.weight[:] = original_first_layer.weight.mean(dim=1, keepdim=True)
 
-            for param in self.resnet18.parameters():
-                param.requires_grad = False
+            # for param in self.resnet18.parameters():
+            #     param.requires_grad = False
 
             self.resnet18.fc = nn.Sequential(
                 nn.Linear(self.resnet18.fc.in_features, 256),
