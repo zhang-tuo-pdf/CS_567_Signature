@@ -4,7 +4,7 @@
 In this project, we utilize a Siamese Neural Network (SNN) to build a machine learning-based handwriting verification system. An SNN consists of two identical sub-networks designed to process pairs of input images simultaneously. By feeding the SNN with two signature images, it calculates the contrastive loss between them to assess their similarity. Based on this analysis, the model determines whether the two signatures are genuine or forged.
 
 ## Datasets
-- **ICDAR**: International Conference on Document Analysis and Recognition, Signature Verification Competition 2011.
+- **ICDAR**: International Conference on Document Analysis and Recognition, SigComp2011.
 - Download ICDAR dataset from https://drive.google.com/drive/folders/1hFljH9AKhxxIqH-3fj72mCMA6Xh3Vv0m
 - **MSDS**: Multimodal Signature and Digit String.
 - MSDS dataset is available at https://github.com/HCIILAB/MSDS
