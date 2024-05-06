@@ -6,7 +6,7 @@ In this project, we utilize a Siamese Neural Network (SNN) to build a machine le
 ## Datasets
 - **ICDAR**: International Conference on Document Analysis and Recognition dataset 2011.
 - Download ICDAR dataset from https://drive.google.com/drive/folders/1hFljH9AKhxxIqH-3fj72mCMA6Xh3Vv0m
-- **MSDS**: Manuscript Signature Detection System dataset.
+- **MSDS**: Multimodal Signature and Digit String.
 - MSDS dataset is available at https://github.com/HCIILAB/MSDS
 
 ## Models
